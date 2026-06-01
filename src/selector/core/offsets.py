@@ -69,6 +69,36 @@ class StructOffsets:
 
 
 @dataclass(frozen=True)
+class RosterLayout:
+    """The scene's visible-entity collection (read-only enumeration source).
+
+    An inline object at the static VA ``container``; its entity storage is an
+    MSVC ``std::deque<element>`` where each element is 8 bytes
+    ``{entity_ptr, _extra}`` (so 2 elements per 16-byte block). Walk live:
+
+        count   = [container + count]
+        _Map    = [container + map_ptr]      # T** block array
+        _Mapsize= [container + map_size]
+        _Myoff  = [container + front_off]    # MOVES as entities spawn/despawn
+        for i in range(count):
+            g     = _Myoff + i
+            block = [_Map + ((g // block_elems) % _Mapsize) * 4]
+            ent   = [block + (g % block_elems) * elem_size]
+
+    Verified live (v3071): walking it recovers every nearby player/monster/NPC
+    with matching ``+0x268`` uid and ``+0x770`` coords. Zero injection.
+    """
+
+    container: int = 0x1A0F488   # inline scene roster (static VA)
+    map_ptr: int = 0x18          # +0x18 -> deque _Map (T** blocks)
+    map_size: int = 0x1C         # +0x1C -> deque _Mapsize
+    front_off: int = 0x20        # +0x20 -> deque _Myoff (front offset; live)
+    count: int = 0x24            # +0x24 -> element count
+    block_elems: int = 2         # MSVC _DEQUESIZ for 8-byte elements
+    elem_size: int = 8           # element = {entity_ptr@+0, _extra@+4}
+
+
+@dataclass(frozen=True)
 class GameTarget:
     """A complete, version-pinned description of one Conquer client build."""
 
@@ -77,6 +107,7 @@ class GameTarget:
     image_base: int
     md5: str
     structs: StructOffsets
+    roster: RosterLayout         # scene visible-entity collection (read-only)
     globals: dict[str, int]      # name -> absolute VA slot (holds a pointer)
     functions: dict[str, Sig]    # name -> callable internal function
     sites: dict[str, Sig]        # name -> inline-hook site
@@ -123,10 +154,15 @@ V3071 = GameTarget(
     image_base=0x400000,
     md5="A671CD3A",
     structs=StructOffsets(),
+    roster=RosterLayout(),
     globals={
         "heroSlot": 0x1A057C0,    # [heroSlot] -> local player object
         "camSlot": 0x1A054F8,     # [camSlot]  -> scene/camera object
         "blessedTid": 0x1A10A14,  # thread-identity tripwire (documented)
+        # std::vector<uint32> of monster UIDs (begin/end) — authoritative
+        # monster set for radar classification (UID bands can't separate it).
+        "monsterVecBegin": 0x1A0F5B0,
+        "monsterVecEnd": 0x1A0F5B4,
     },
     functions={
         "sentGetter": Sig(None, 0x43C68C, "hero/scene getter -> [heroSlot]"),

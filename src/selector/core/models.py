@@ -6,11 +6,27 @@ domain concept.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 # PK-mode enum at hero+0x1B7C (verified from the CT: 1=Peace, 3=Capture).
 PK_NAMES: dict[int, str] = {
     0: "Free (PK)", 1: "Peace", 2: "Team", 3: "Capture", 4: "Guild", 5: "Ally",
 }
+
+
+class EntityKind(str, Enum):
+    """What a radar entity is, relative to the local player.
+
+    A ``str`` enum so it serialises and compares as its plain value (e.g. for
+    logs / the future UI) while staying exhaustively checkable. ``str, Enum`` is
+    used over 3.11's ``StrEnum`` to keep the 3.10 floor (see pyproject).
+    """
+
+    SELF = "self"        # the local player
+    PLAYER = "player"    # another player
+    MONSTER = "monster"  # monster / pet / guard
+    NPC = "npc"          # stationary NPC (shop, quest, etc.)
+    TARGET = "target"    # the currently selected target (overrides the rest)
 
 
 def pk_label(pk: int | None) -> str | None:
@@ -45,7 +61,7 @@ class Entity:
     x: int
     y: int
     pk: int | None
-    kind: str        # "player" | "monster" | "target"
+    kind: EntityKind
     dist: int        # Chebyshev distance from the hero
 
     @property

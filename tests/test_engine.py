@@ -1,6 +1,7 @@
 """Tests for the engine read layer (mock + protocol conformance)."""
 from __future__ import annotations
 
+from selector.core.models import EntityKind
 from selector.engine.memory import MemoryReader
 from selector.engine.mock_engine import MockEngine
 from selector.engine.protocol import EngineProtocol
@@ -25,6 +26,13 @@ def test_mock_reads() -> None:
     ents = e.entities()
     assert len(ents) >= 1
     assert all(isinstance(en.dist, int) for en in ents)
+    assert all(isinstance(en.kind, EntityKind) for en in ents)
+    # the selected uid must surface as the TARGET, regardless of its band
+    target = next(en for en in ents if en.uid == 1007799)
+    assert target.kind is EntityKind.TARGET
+    # the mock seeds one of each band -> classification covers them
+    kinds = {en.kind for en in ents}
+    assert {EntityKind.PLAYER, EntityKind.MONSTER, EntityKind.NPC} <= kinds
 
 
 def test_mock_detached_returns_none() -> None:

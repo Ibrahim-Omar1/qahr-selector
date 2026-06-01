@@ -7,6 +7,7 @@ from __future__ import annotations
 import math
 
 from selector.core.models import Entity, Hero
+from selector.core.radar import chebyshev, classify
 
 
 class MockEngine:
@@ -45,15 +46,21 @@ class MockEngine:
             return []
         h = self.hero()
         hx, hy = (h.x, h.y) if h else (300, 300)
+        hero_uid = h.uid if h else None
+        sel = self.selected_uid()
+        # uids chosen to land in distinct bands: player (>999999), monster
+        # (500001..999999), NPC (<500001); "Sadistic" == selected -> TARGET.
         seed = [
-            (23058, "Reaper", hx + 4, hy + 2, 0, "player"),
-            (1000360, "Turtle", hx - 6, hy + 1, 0, "monster"),
-            (1007799, "Sadistic", hx + 1, hy - 3, 3, "target"),
+            (1050860, "Reaper", hx + 4, hy + 2, 0),
+            (700123, "Turtle", hx - 6, hy + 1, 0),
+            (12345, "Merchant", hx + 9, hy - 2, 1),
+            (1007799, "Sadistic", hx + 1, hy - 3, 3),
         ]
-        out: list[Entity] = []
-        for uid, name, x, y, pk, kind in seed:
-            out.append(
-                Entity(uid=uid, name=name, x=x, y=y, pk=pk, kind=kind,
-                       dist=max(abs(x - hx), abs(y - hy)))
+        return [
+            Entity(
+                uid=uid, name=name, x=x, y=y, pk=pk,
+                kind=classify(uid, selected_uid=sel, hero_uid=hero_uid),
+                dist=chebyshev(hx, hy, x, y),
             )
-        return out
+            for uid, name, x, y, pk in seed
+        ]
