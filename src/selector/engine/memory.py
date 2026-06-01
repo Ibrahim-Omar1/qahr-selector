@@ -181,6 +181,38 @@ class MemoryReader:
             return frozenset()
         return frozenset(struct.unpack(f"<{n}I", raw))
 
+    def _read_syndicate_relations(self) -> tuple[frozenset[int], frozenset[int]]:
+        """Read the game's syndicate-relation table -> (ally ids, enemy ids).
+
+        A ``vector<CSyndicateEntry*>`` at ``container +0x58/+0x5C``; each entry
+        has the guild id at +0x08 and the relation at +0x3C (0=ally, 1=enemy,
+        2=own). Mirrors the in-game guild-relations panel.
+        """
+        r = self.target.roster
+        cb = self._rebase(r.container)
+        begin = self._u32(cb + r.rel_begin)
+        end = self._u32(cb + r.rel_end)
+        if not begin or not end or end <= begin or (end - begin) % 4:
+            return frozenset(), frozenset()
+        count = (end - begin) // 4
+        if count > MAX_ENTITIES:
+            return frozenset(), frozenset()
+        allies: set[int] = set()
+        enemies: set[int] = set()
+        for i in range(count):
+            entry = self._u32(begin + i * 4)
+            if not entry:
+                continue
+            sid = self._u32(entry + r.rel_id)
+            if not sid:
+                continue
+            val = self._u32(entry + r.rel_value)
+            if val == 0:
+                allies.add(sid)
+            elif val == 1:
+                enemies.add(sid)
+        return frozenset(allies), frozenset(enemies)
+
     def _decode_entity(
         self,
         ep: int,
@@ -188,6 +220,8 @@ class MemoryReader:
         selected: int | None,
         monsters: frozenset[int],
         hero_syndicate_id: int,
+        allies: frozenset[int],
+        enemies: frozenset[int],
     ) -> Entity | None:
         """Decode one entity-object pointer into an ``Entity`` (None if unusable)."""
         st = self.target.structs
@@ -214,7 +248,8 @@ class MemoryReader:
             guild=guild,
             guild_id=synid,
             relation=relation(
-                uid, synid, hero_uid=hero.uid, hero_syndicate_id=hero_syndicate_id
+                uid, synid, hero_uid=hero.uid, hero_syndicate_id=hero_syndicate_id,
+                allies=allies, enemies=enemies,
             ),
         )
 
@@ -239,12 +274,13 @@ class MemoryReader:
         monsters = self._read_uid_vector("monsterVecBegin", "monsterVecEnd")
         hero_ptr = self._hero_ptr()
         hero_syn = (self._u32(hero_ptr + self.target.structs.syndicate_id) or 0) if hero_ptr else 0
+        allies, enemies = self._read_syndicate_relations()
         out: list[Entity] = []
         for i in range(min(count, MAX_ENTITIES)):
             ep = self._roster_entity_ptr(_map, mapsize, myoff, i)
             if ep is None:
                 continue
-            ent = self._decode_entity(ep, hero, selected, monsters, hero_syn)
+            ent = self._decode_entity(ep, hero, selected, monsters, hero_syn, allies, enemies)
             if ent is not None and ent.dist <= radius:
                 out.append(ent)
         out.sort(key=lambda e: e.dist)

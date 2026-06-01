@@ -99,6 +99,12 @@ class RosterLayout:
     count: int = 0x24            # +0x24 -> element count
     block_elems: int = 2         # MSVC _DEQUESIZ for 8-byte elements
     elem_size: int = 8           # element = {entity_ptr@+0, _extra@+4}
+    # Syndicate-relation table (same singleton): vector<CSyndicateEntry*>.
+    rel_begin: int = 0x58        # +0x58 -> begin ptr
+    rel_end: int = 0x5C          # +0x5C -> end ptr
+    rel_id: int = 0x08           # entry +0x08 -> syndicate id
+    rel_value: int = 0x3C        # entry +0x3C -> 0=ally, 1=enemy, 2=own (verified live)
+    rel_name: int = 0x24         # entry +0x24 -> guild name (std::wstring)
 
 
 @dataclass(frozen=True)
