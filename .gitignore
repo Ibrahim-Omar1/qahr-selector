@@ -13,3 +13,6 @@ dist/
 # app
 logs/
 *.log
+
+# local reference assets (e.g. the original Cheat Engine table) — not published
+reference/
