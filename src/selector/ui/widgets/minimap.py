@@ -50,24 +50,33 @@ class MinimapView(QWidget):
         p.end()
 
     def _draw_grid(self, p: QPainter, cx: float, cy: float, plot_r: float) -> None:
-        ring = QPen(QColor(255, 255, 255, 26), 1.0)
-        p.setPen(ring)
+        center = QPointF(cx, cy)
+        # range disc (subtle scope fill)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QColor(255, 255, 255, 8))
+        p.drawEllipse(center, plot_r, plot_r)
+        # rings + per-ring tile labels
+        small = QFont()
+        small.setPixelSize(9)
         for frac in (0.5, 1.0):
             r = plot_r * frac
-            p.drawEllipse(QPointF(cx, cy), r, r)
+            p.setPen(QPen(QColor(255, 255, 255, 30), 1.0))
+            p.setBrush(Qt.BrushStyle.NoBrush)
+            p.drawEllipse(center, r, r)
+            p.setFont(small)
+            p.setPen(QColor(255, 255, 255, 70))
+            p.drawText(int(cx + 4), int(cy - r - 2), str(int(self._radius * frac)))
         # crosshair
-        p.setPen(QPen(QColor(255, 255, 255, 18), 1.0))
+        p.setPen(QPen(QColor(255, 255, 255, 16), 1.0))
         p.drawLine(QPointF(cx - plot_r, cy), QPointF(cx + plot_r, cy))
         p.drawLine(QPointF(cx, cy - plot_r), QPointF(cx, cy + plot_r))
         # cardinal labels
-        f = QFont()
-        f.setPointSize(8)
-        p.setFont(f)
+        p.setFont(small)
         p.setPen(QColor("#7A7A7A"))
-        p.drawText(int(cx - 4), int(cy - plot_r - 4), "N")
-        p.drawText(int(cx - 4), int(cy + plot_r + 12), "S")
-        p.drawText(int(cx + plot_r + 4), int(cy + 4), "E")
-        p.drawText(int(cx - plot_r - 12), int(cy + 4), "W")
+        p.drawText(int(cx - 4), int(cy - plot_r - 5), "N")
+        p.drawText(int(cx - 4), int(cy + plot_r + 13), "S")
+        p.drawText(int(cx + plot_r + 5), int(cy + 4), "E")
+        p.drawText(int(cx - plot_r - 13), int(cy + 4), "W")
 
     def _draw_entities(
         self, p: QPainter, cx: float, cy: float, scale: float, plot_r: float
@@ -89,15 +98,17 @@ class MinimapView(QWidget):
             p.drawEllipse(QPointF(ex, ey), dot, dot)
 
     def _draw_hero(self, p: QPainter, cx: float, cy: float) -> None:
+        center = QPointF(cx, cy)
         accent = QColor(COLORS.accent)
-        halo = QColor(accent)
-        halo.setAlpha(60)
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(halo)
-        p.drawEllipse(QPointF(cx, cy), 9, 9)
-        p.setPen(QPen(QColor("#0B0E14"), 1.5))
-        p.setBrush(accent)
-        p.drawEllipse(QPointF(cx, cy), 4.5, 4.5)
+        for radius, alpha in ((13.0, 40), (9.0, 70)):  # layered violet glow
+            glow = QColor(accent)
+            glow.setAlpha(alpha)
+            p.setBrush(glow)
+            p.drawEllipse(center, radius, radius)
+        p.setPen(QPen(QColor(COLORS.bg), 1.5))
+        p.setBrush(QColor("#FFFFFF"))
+        p.drawEllipse(center, 4.5, 4.5)
 
     def _draw_centered_text(self, p: QPainter, cx: float, cy: float, text: str) -> None:
         p.setPen(QColor("#7A7A7A"))

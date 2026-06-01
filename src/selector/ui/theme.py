@@ -1,9 +1,8 @@
 """ui/theme — the design system (tokens + global stylesheet).
 
-A **Windows 11 / Fluent dark** system built on a *single* spacing scale, one
-control height, and a clear 3-step surface hierarchy so every control lines up.
-Pure data + a QSS builder (no widgets). Entity colors are shared by the table
-and the minimap.
+A **Windows 11 / Fluent dark** system with a violet accent and a little
+personality (gradient active-nav, accent-tinted hover/selection). One spacing
+scale + one control height so everything aligns. Pure data + a QSS builder.
 """
 from __future__ import annotations
 
@@ -16,23 +15,26 @@ from selector.core.models import EntityKind
 class Palette:
     """Color tokens (hex / rgba() strings, QSS-ready). 3 surface steps."""
 
-    bg: str = "#1B1B1B"          # window base
-    sidebar: str = "#1F1F1F"     # nav pane
-    card: str = "#242424"        # panels
-    control: str = "#2D2D2D"     # buttons / inputs
-    control_hover: str = "#353535"
-    control_down: str = "#2A2A2A"
+    bg: str = "#1A1A1B"          # window base
+    sidebar: str = "#202021"     # nav pane
+    card: str = "#242425"        # panels
+    card_alt: str = "#2A2A2C"    # alternating row / subtle raise
+    control: str = "#2D2D2F"     # buttons / inputs
+    control_hover: str = "#37373A"
 
     border: str = "rgba(255,255,255,0.08)"
     divider: str = "rgba(255,255,255,0.06)"
 
-    text: str = "#FFFFFF"
-    muted: str = "rgba(255,255,255,0.72)"
-    faint: str = "rgba(255,255,255,0.45)"
+    text: str = "#F2F2F3"
+    muted: str = "rgba(255,255,255,0.70)"
+    faint: str = "rgba(255,255,255,0.42)"
+    icon: str = "#C7C9D1"        # nav glyph color (needs a solid hex)
 
-    accent: str = "#4CC2FF"
-    accent_hover: str = "#5BC9FF"
-    on_accent: str = "#04304A"
+    accent: str = "#8B5CF6"      # violet
+    accent_hover: str = "#9E78FF"
+    accent_soft: str = "rgba(139,92,246,0.16)"     # tints (hover/selection)
+    accent_soft2: str = "rgba(139,92,246,0.24)"
+    on_accent: str = "#FFFFFF"
 
     # entity-kind colors (distinct hues; shared by table + minimap)
     self_: str = "#33D9B2"
@@ -48,17 +50,19 @@ class Metrics:
 
     gap_s: int = 6
     gap: int = 8
-    gutter: int = 16            # standard spacing between groups
-    pad_card: int = 16
+    gutter: int = 16
+    pad_card: int = 18
     pad_page: int = 24
 
-    ctl_h: int = 32             # ALL interactive controls share this height
+    ctl_h: int = 32
     header_h: int = 56
-    nav_h: int = 38
-    sidebar_w: int = 208
+    nav_h: int = 40
+    row_h: int = 34
+    sidebar_w: int = 212
+    sidebar_w_collapsed: int = 56
 
-    radius: int = 8             # cards
-    radius_ctl: int = 6         # buttons / inputs
+    radius: int = 8
+    radius_ctl: int = 6
 
     fs_title: int = 20
     fs_brand: int = 15
@@ -88,7 +92,7 @@ def kind_color(kind: EntityKind) -> str:
 
 
 def qss() -> str:
-    """Global Qt stylesheet built from the tokens (Fluent dark)."""
+    """Global Qt stylesheet built from the tokens (Fluent dark, violet accent)."""
     c, m = COLORS, METRICS
     return f"""
     * {{
@@ -98,22 +102,35 @@ def qss() -> str:
         outline: none;
     }}
     QWidget#root, QMainWindow {{ background: {c.bg}; }}
+    QToolTip {{
+        background: {c.control}; color: {c.text}; border: 1px solid {c.border};
+        padding: 4px 8px; border-radius: {m.radius_ctl}px;
+    }}
 
     /* sidebar */
     QWidget#sidebar {{ background: {c.sidebar}; }}
     QLabel#brand {{ font-size: {m.fs_brand}px; font-weight: 700; }}
-    QLabel#brandAccent {{ font-size: {m.fs_brand}px; font-weight: 700; color: {c.accent}; }}
+    QLabel#brandAccent {{ font-size: {m.fs_brand}px; font-weight: 800; color: {c.accent}; }}
     QLabel#navHint {{ color: {c.faint}; font-size: {m.fs_small}px; }}
+    QPushButton#hamburger {{
+        border: none; background: transparent; border-radius: {m.radius_ctl}px;
+        min-height: {m.ctl_h}px; min-width: {m.ctl_h}px;
+    }}
+    QPushButton#hamburger:hover {{ background: {c.divider}; }}
     QPushButton#nav {{
-        text-align: left; padding: 0 12px; min-height: {m.nav_h}px; border: none;
-        border-left: 3px solid transparent; border-radius: {m.radius_ctl}px;
+        text-align: left; padding: 0 10px; min-height: {m.nav_h}px; border: none;
+        border-left: 3px solid transparent; border-top-right-radius: {m.radius_ctl}px;
+        border-bottom-right-radius: {m.radius_ctl}px;
         color: {c.muted}; background: transparent; font-weight: 600;
     }}
     QPushButton#nav:hover {{ background: {c.divider}; color: {c.text}; }}
     QPushButton#nav:checked {{
-        background: {c.control}; color: {c.text}; border-left: 3px solid {c.accent};
+        color: {c.text}; border-left: 3px solid {c.accent};
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+            stop:0 {c.accent_soft2}, stop:1 {c.accent_soft});
     }}
     QPushButton#nav:disabled {{ color: {c.faint}; background: transparent; }}
+    QPushButton#nav[collapsed="true"] {{ text-align: center; padding: 0; }}
 
     /* header */
     QWidget#header {{ background: {c.bg}; border-bottom: 1px solid {c.divider}; }}
@@ -128,30 +145,32 @@ def qss() -> str:
         background: {c.card}; border: 1px solid {c.border}; border-radius: {m.radius}px;
     }}
     QLabel#cardTitle {{
-        color: {c.muted}; font-weight: 700; font-size: {m.fs_caps}px; letter-spacing: 1px;
+        color: {c.faint}; font-weight: 700; font-size: {m.fs_caps}px; letter-spacing: 1.5px;
     }}
 
     /* table */
     QTableView {{
         background: transparent; border: none; gridline-color: transparent;
-        selection-background-color: {c.divider}; selection-color: {c.text};
+        alternate-background-color: {c.card_alt};
+        selection-background-color: {c.accent_soft}; selection-color: {c.text};
     }}
     QHeaderView::section {{
         background: transparent; color: {c.faint}; border: none;
-        border-bottom: 1px solid {c.border}; padding: 6px 8px;
+        border-bottom: 1px solid {c.border}; padding: 8px;
         font-weight: 700; font-size: {m.fs_small}px;
     }}
-    QTableView::item {{ padding: 5px 8px; border: none; }}
+    QTableView::item {{ padding: 0 8px; border: none; }}
 
-    /* buttons (one style family; #toggle is the segmented variant) */
+    /* buttons (one family; #toggle is the segmented variant) */
     QPushButton#toggle {{
         background: {c.control}; border: 1px solid {c.border}; border-radius: {m.radius_ctl}px;
-        padding: 0 14px; color: {c.muted}; font-weight: 600;
+        padding: 0 14px; color: {c.muted}; font-weight: 700;
     }}
     QPushButton#toggle:hover {{ background: {c.control_hover}; color: {c.text}; }}
     QPushButton#toggle:checked {{
         background: {c.accent}; border-color: {c.accent}; color: {c.on_accent};
     }}
+    QPushButton#toggle:checked:hover {{ background: {c.accent_hover}; }}
 
     /* slider */
     QSlider {{ min-height: {m.ctl_h}px; }}
@@ -160,7 +179,7 @@ def qss() -> str:
     QSlider::handle:horizontal {{
         background: {c.text}; width: 14px; height: 14px; margin: -6px 0; border-radius: 7px;
     }}
-    QSlider::handle:horizontal:hover {{ background: {c.accent}; }}
+    QSlider::handle:horizontal:hover {{ background: {c.accent_hover}; }}
 
     /* scrollbars */
     QSplitter::handle {{ background: transparent; }}
