@@ -1,15 +1,21 @@
 """Entry point — intentionally thin.
 
-Parses CLI args, builds the application via the composition root
-(`selector.app.bootstrap`), and runs it. No logic lives here.
+Parses args, builds the app via the composition root, runs it.
+    uv run selector            # Mock data (no game needed)
+    uv run selector --live     # attach to the live game
 """
 from __future__ import annotations
 
+import sys
+
 
 def main() -> int:
-    # Wired up in app/bootstrap.py once the foundation lands.
-    raise SystemExit("selector: scaffold only — not implemented yet")
+    from selector.app.bootstrap import build
+
+    app, window = build(live="--live" in sys.argv)
+    window.show()
+    return int(app.exec())
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

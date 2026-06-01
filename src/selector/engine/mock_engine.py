@@ -41,7 +41,7 @@ class MockEngine:
     def selected_uid(self) -> int | None:
         return 1007799
 
-    def entities(self) -> list[Entity]:
+    def entities(self, radius: int = 64) -> list[Entity]:
         if not self._attached:
             return []
         h = self.hero()
