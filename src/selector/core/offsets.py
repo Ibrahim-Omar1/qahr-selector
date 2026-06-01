@@ -57,7 +57,7 @@ class StructOffsets:
     pk: int = 0x1B7C          # PK-mode enum
     syndicate_id: int = 0xB40    # guild/syndicate id (0 = not in a guild)
     syndicate_rank: int = 0xB44  # rank/position within the guild
-    syndicate_name: int = 0xB70  # CString ptr -> guild name (valid when id != 0)
+    syndicate_name: int = 0xB70  # std::wstring guild name (SSO-aware; len @ +0x10)
     speed: int = 0x3F0        # move-speed
     magic_cd: int = 0x1DBC    # magic-cooldown gate
     anim: int = 0x3D8         # action/animation id

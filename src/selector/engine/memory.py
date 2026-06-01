@@ -85,6 +85,27 @@ class MemoryReader:
         text: str = bytes(raw).decode("utf-16-le", errors="ignore")
         return text.split("\x00", 1)[0]
 
+    def _wstr(self, field: int, max_chars: int = 64) -> str:
+        """Read an MSVC ``std::wstring`` at ``field`` (small-string-aware).
+
+        Short strings are stored inline at the field; longer ones on the heap
+        (pointer at the field). ``_Mysize`` is at +0x10, ``_Myres`` at +0x14;
+        heap when ``_Myres >= 8`` (the inline buffer holds 8 wchars).
+        """
+        size = self._u32(field + 0x10)
+        res = self._u32(field + 0x14)
+        if not size or res is None or size > max_chars or self._pm is None:
+            return ""
+        buf = self._u32(field) if res >= 8 else field
+        if not buf:
+            return ""
+        try:
+            raw = self._pm.read_bytes(buf, size * 2)
+        except Exception:
+            return ""
+        text: str = bytes(raw).decode("utf-16-le", errors="ignore")
+        return text
+
     # ---- decoded state -------------------------------------------------------
     def _coords(self, obj: int) -> tuple[int, int] | None:
         st = self.target.structs
@@ -176,12 +197,11 @@ class MemoryReader:
         xy = self._coords(ep)
         if xy is None:
             return None
-        # syndicate id gates the (otherwise stale) guild-name pointer.
+        # Guild: id at +0xB40 (0 = none); name is a std::wstring at +0xB70
+        # (SSO-aware — short names like "RoD"/"حبوبه" are inline, longer ones
+        # on the heap). The id gates the read so unguilded players stay blank.
         synid = self._u32(ep + st.syndicate_id) or 0
-        guild = ""
-        if synid:
-            gp = self._u32(ep + st.syndicate_name)
-            guild = self._utf16(gp) if gp else ""
+        guild = self._wstr(ep + st.syndicate_name) if synid else ""
         name_ptr = self._u32(ep + st.name)
         return Entity(
             uid=uid,
