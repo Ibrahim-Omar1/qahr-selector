@@ -4,13 +4,13 @@ version = "0.1.0"
 description = "Qahr Online v3071 trainer — PySide6 UI, pymem reads, Frida hooks (gameplay only)"
 requires-python = ">=3.10"
 dependencies = [
-    "PySide6>=6.6",
-    "pymem>=1.13.1",
-    "frida>=17",
+    "PySide6>=6.11.1",
+    "pymem>=1.14.0",
+    "frida>=17.10.0",
 ]
 
 [project.optional-dependencies]
-dev = ["ruff>=0.6", "mypy>=1.10", "pytest>=8", "pyinstaller>=6"]
+dev = ["ruff>=0.15.15", "mypy>=2.1.0", "pytest>=9.0.3", "pyinstaller>=6.20.0"]
 
 [project.scripts]
 selector = "selector.__main__:main"
