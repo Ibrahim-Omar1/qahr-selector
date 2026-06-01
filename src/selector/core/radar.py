@@ -12,7 +12,7 @@ they are not addresses tied to a binary build.
 """
 from __future__ import annotations
 
-from selector.core.models import EntityKind
+from selector.core.models import EntityKind, Relation
 
 # --- UID bands (entity classification) --------------------------------------
 # uid > 0xF423F (999999)  -> a player
@@ -46,6 +46,31 @@ def classify(
     if uid in monsters or (not monsters and uid >= UID_MONSTER_MIN):
         return EntityKind.MONSTER
     return EntityKind.NPC
+
+
+def relation(
+    uid: int,
+    syndicate_id: int,
+    *,
+    hero_uid: int | None = None,
+    hero_syndicate_id: int = 0,
+    allies: frozenset[int] = frozenset(),
+    enemies: frozenset[int] = frozenset(),
+) -> Relation:
+    """A player's relationship to the hero, from syndicate (guild) ids.
+
+    Guildmate = same non-zero syndicate as the hero. Ally/enemy come from the
+    hero guild's alliance/enmity lists (passed in; empty until those are wired).
+    """
+    if hero_uid is not None and uid == hero_uid:
+        return Relation.SELF
+    if syndicate_id and syndicate_id == hero_syndicate_id:
+        return Relation.GUILDMATE
+    if syndicate_id and syndicate_id in allies:
+        return Relation.ALLY
+    if syndicate_id and syndicate_id in enemies:
+        return Relation.ENEMY
+    return Relation.NEUTRAL
 
 
 def chebyshev(ax: int, ay: int, bx: int, by: int) -> int:

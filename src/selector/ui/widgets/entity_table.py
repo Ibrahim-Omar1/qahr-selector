@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from selector.core.models import Entity
-from selector.ui.theme import COLORS, METRICS, kind_color
+from selector.ui.theme import COLORS, METRICS, kind_color, relation_color
 
 _HEADERS = ("Kind", "Name", "Guild", "UID", "Tile", "Dist", "PK")
 _Index = QModelIndex | QPersistentModelIndex  # Qt's index argument type
@@ -83,6 +83,9 @@ class EntityTableModel(QAbstractTableModel):
             )[col]
         if role == Qt.ItemDataRole.ForegroundRole and col == 0:
             return QColor(kind_color(e.kind))
+        if role == Qt.ItemDataRole.ForegroundRole and col == 2:
+            rc = relation_color(e.relation)            # guild cell: tint by relationship
+            return QColor(rc) if rc else None
         if role == Qt.ItemDataRole.TextAlignmentRole and col in (3, 4, 5):
             return int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         return None

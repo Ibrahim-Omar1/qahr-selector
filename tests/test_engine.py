@@ -1,7 +1,7 @@
 """Tests for the engine read layer (mock + protocol conformance)."""
 from __future__ import annotations
 
-from selector.core.models import EntityKind
+from selector.core.models import EntityKind, Relation
 from selector.engine.memory import MemoryReader
 from selector.engine.mock_engine import MockEngine
 from selector.engine.protocol import EngineProtocol
@@ -33,6 +33,9 @@ def test_mock_reads() -> None:
     # the mock seeds one of each band -> classification covers them
     kinds = {en.kind for en in ents}
     assert {EntityKind.PLAYER, EntityKind.MONSTER, EntityKind.NPC} <= kinds
+    # relations are populated (mock seeds guildmate/ally/enemy)
+    rels = {en.relation for en in ents}
+    assert {Relation.GUILDMATE, Relation.ALLY, Relation.ENEMY} <= rels
 
 
 def test_mock_detached_returns_none() -> None:

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import math
 
-from selector.core.models import Entity, Hero
+from selector.core.models import Entity, Hero, Relation
 from selector.core.radar import chebyshev, classify
 
 
@@ -50,18 +50,21 @@ class MockEngine:
         sel = self.selected_uid()
         # uids chosen to land in distinct bands: player (>999999), monster
         # (500001..999999), NPC (<500001); "Sadistic" == selected -> TARGET.
+        # uid, name, x, y, pk, guild, relation
         seed = [
-            (1050860, "Reaper", hx + 4, hy + 2, 0, "Vanguard"),
-            (700123, "Turtle", hx - 6, hy + 1, 0, ""),
-            (12345, "Merchant", hx + 9, hy - 2, 1, ""),
-            (1007799, "Sadistic", hx + 1, hy - 3, 3, "Vanguard"),
+            (1050860, "Reaper", hx + 4, hy + 2, 0, "Vanguard", Relation.GUILDMATE),
+            (1050861, "Aegis", hx - 5, hy + 3, 0, "Bastion", Relation.ALLY),
+            (1050862, "Ruin", hx + 6, hy - 4, 0, "Crimson", Relation.ENEMY),
+            (700123, "Turtle", hx - 6, hy + 1, 0, "", Relation.NEUTRAL),
+            (12345, "Merchant", hx + 9, hy - 2, 1, "", Relation.NEUTRAL),
+            (1007799, "Sadistic", hx + 1, hy - 3, 3, "Vanguard", Relation.GUILDMATE),
         ]
         return [
             Entity(
                 uid=uid, name=name, x=x, y=y, pk=pk,
                 kind=classify(uid, selected_uid=sel, hero_uid=hero_uid),
                 dist=chebyshev(hx, hy, x, y),
-                guild=guild,
+                guild=guild, relation=rel,
             )
-            for uid, name, x, y, pk, guild in seed
+            for uid, name, x, y, pk, guild, rel in seed
         ]

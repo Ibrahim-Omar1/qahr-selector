@@ -29,6 +29,16 @@ class EntityKind(str, Enum):
     TARGET = "target"    # the currently selected target (overrides the rest)
 
 
+class Relation(str, Enum):
+    """A player's relationship to the local hero (orthogonal to EntityKind)."""
+
+    SELF = "self"
+    GUILDMATE = "guild"   # same syndicate as the hero
+    ALLY = "ally"         # hero's guild allies (reserved — needs alliance lists)
+    ENEMY = "enemy"       # hero's guild enemies (reserved)
+    NEUTRAL = "neutral"
+
+
 def pk_label(pk: int | None) -> str | None:
     """PK-mode value -> human label; unknown -> 'Mode N' (never '?')."""
     if pk is None:
@@ -64,6 +74,7 @@ class Entity:
     kind: EntityKind
     dist: int        # Chebyshev distance from the hero
     guild: str = ""  # guild/syndicate name ("" if not in one)
+    relation: Relation = Relation.NEUTRAL  # vs. the hero (guildmate/ally/enemy)
 
     @property
     def pk_name(self) -> str | None:

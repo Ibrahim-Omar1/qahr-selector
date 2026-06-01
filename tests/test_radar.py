@@ -1,14 +1,27 @@
 """Unit tests for core.radar — pure, no game required."""
 from __future__ import annotations
 
-from selector.core.models import EntityKind
+from selector.core.models import EntityKind, Relation
 from selector.core.radar import (
     UID_MONSTER_MIN,
     UID_PLAYER_MIN,
     chebyshev,
     classify,
+    relation,
     within_radius,
 )
+
+
+def test_relation() -> None:
+    me = 1_050_859
+    assert relation(me, 26, hero_uid=me, hero_syndicate_id=26) is Relation.SELF
+    # same non-zero syndicate as hero -> guildmate
+    assert relation(1_000_711, 26, hero_uid=me, hero_syndicate_id=26) is Relation.GUILDMATE
+    # different/zero syndicate -> neutral unless in ally/enemy sets
+    assert relation(1_000_711, 0, hero_uid=me, hero_syndicate_id=26) is Relation.NEUTRAL
+    assert relation(1_000_711, 14, hero_uid=me, hero_syndicate_id=26) is Relation.NEUTRAL
+    assert relation(1, 14, hero_syndicate_id=26, allies=frozenset({14})) is Relation.ALLY
+    assert relation(1, 99, hero_syndicate_id=26, enemies=frozenset({99})) is Relation.ENEMY
 
 
 def test_classify_uid_bands() -> None:

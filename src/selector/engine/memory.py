@@ -16,7 +16,7 @@ from typing import Any
 
 from selector.core.models import Entity, Hero
 from selector.core.offsets import CURRENT, GameTarget
-from selector.core.radar import chebyshev, classify
+from selector.core.radar import chebyshev, classify, relation
 
 try:
     import pymem
@@ -161,7 +161,12 @@ class MemoryReader:
         return frozenset(struct.unpack(f"<{n}I", raw))
 
     def _decode_entity(
-        self, ep: int, hero: Hero, selected: int | None, monsters: frozenset[int]
+        self,
+        ep: int,
+        hero: Hero,
+        selected: int | None,
+        monsters: frozenset[int],
+        hero_syndicate_id: int,
     ) -> Entity | None:
         """Decode one entity-object pointer into an ``Entity`` (None if unusable)."""
         st = self.target.structs
@@ -171,6 +176,12 @@ class MemoryReader:
         xy = self._coords(ep)
         if xy is None:
             return None
+        # syndicate id gates the (otherwise stale) guild-name pointer.
+        synid = self._u32(ep + st.syndicate_id) or 0
+        guild = ""
+        if synid:
+            gp = self._u32(ep + st.syndicate_name)
+            guild = self._utf16(gp) if gp else ""
         name_ptr = self._u32(ep + st.name)
         return Entity(
             uid=uid,
@@ -180,20 +191,11 @@ class MemoryReader:
             pk=self._u32(ep + st.pk),
             kind=classify(uid, selected_uid=selected, hero_uid=hero.uid, monsters=monsters),
             dist=chebyshev(hero.x, hero.y, xy[0], xy[1]),
-            guild=self._guild_name(ep),
+            guild=guild,
+            relation=relation(
+                uid, synid, hero_uid=hero.uid, hero_syndicate_id=hero_syndicate_id
+            ),
         )
-
-    def _guild_name(self, ep: int) -> str:
-        """Guild/syndicate name, or '' if the entity isn't in one.
-
-        Gated on the syndicate id (+0xB40): the name pointer (+0xB70) is only
-        valid when the id is non-zero (otherwise it's a stale pointer).
-        """
-        st = self.target.structs
-        if not self._u32(ep + st.syndicate_id):
-            return ""
-        name_ptr = self._u32(ep + st.syndicate_name)
-        return self._utf16(name_ptr) if name_ptr else ""
 
     def entities(self, radius: int = 64) -> list[Entity]:
         """Read-only radar: nearby entities within ``radius`` tiles, sorted by distance.
@@ -214,12 +216,14 @@ class MemoryReader:
             return []
         selected = self.selected_uid()
         monsters = self._read_uid_vector("monsterVecBegin", "monsterVecEnd")
+        hero_ptr = self._hero_ptr()
+        hero_syn = (self._u32(hero_ptr + self.target.structs.syndicate_id) or 0) if hero_ptr else 0
         out: list[Entity] = []
         for i in range(min(count, MAX_ENTITIES)):
             ep = self._roster_entity_ptr(_map, mapsize, myoff, i)
             if ep is None:
                 continue
-            ent = self._decode_entity(ep, hero, selected, monsters)
+            ent = self._decode_entity(ep, hero, selected, monsters, hero_syn)
             if ent is not None and ent.dist <= radius:
                 out.append(ent)
         out.sort(key=lambda e: e.dist)

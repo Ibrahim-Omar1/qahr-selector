@@ -12,7 +12,7 @@ from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
 from selector.core.models import Entity, EntityKind, Hero
-from selector.ui.theme import COLORS, kind_color
+from selector.ui.theme import COLORS, kind_color, relation_color
 
 
 class MinimapView(QWidget):
@@ -88,7 +88,7 @@ class MinimapView(QWidget):
             ey = cy + (e.y - hero.y) * scale
             # clamp to the plot circle edge if slightly outside
             dot = 5.0 if e.kind in (EntityKind.PLAYER, EntityKind.TARGET) else 4.0
-            color = QColor(kind_color(e.kind))
+            color = QColor(relation_color(e.relation) or kind_color(e.kind))
             if e.kind is EntityKind.TARGET:
                 p.setPen(QPen(color, 1.5))
                 p.setBrush(Qt.BrushStyle.NoBrush)

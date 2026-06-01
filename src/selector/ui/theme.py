@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from selector.core.models import EntityKind
+from selector.core.models import EntityKind, Relation
 
 
 @dataclass(frozen=True)
@@ -89,6 +89,20 @@ _KIND_COLOR: dict[EntityKind, str] = {
 def kind_color(kind: EntityKind) -> str:
     """Hex color for an entity kind (consistent across table + minimap)."""
     return _KIND_COLOR.get(kind, COLORS.npc)
+
+
+# Relationship colors (user spec): ally green, same guild yellow, enemy red.
+_REL_COLOR: dict[Relation, str] = {
+    Relation.SELF: COLORS.accent,
+    Relation.GUILDMATE: "#FFD93D",   # yellow
+    Relation.ALLY: "#3DDC84",        # green
+    Relation.ENEMY: "#FF5C5C",       # red
+}
+
+
+def relation_color(rel: Relation) -> str | None:
+    """Hex color for a relationship, or None for NEUTRAL (fall back to kind)."""
+    return _REL_COLOR.get(rel)
 
 
 def qss() -> str:
