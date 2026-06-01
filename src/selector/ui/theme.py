@@ -1,9 +1,9 @@
 """ui/theme — the design system (tokens + global stylesheet).
 
-A **Windows 11 / Fluent dark** palette: layered neutral grays (Mica-style, not
-harsh black — comfortable for long sessions), a Win11 blue accent, Segoe UI
-Variable, rounded Fluent controls. Pure data + a QSS builder (no widgets), so
-the entity colors here are shared by both the table and the minimap.
+A **Windows 11 / Fluent dark** system built on a *single* spacing scale, one
+control height, and a clear 3-step surface hierarchy so every control lines up.
+Pure data + a QSS builder (no widgets). Entity colors are shared by the table
+and the minimap.
 """
 from __future__ import annotations
 
@@ -14,47 +14,58 @@ from selector.core.models import EntityKind
 
 @dataclass(frozen=True)
 class Palette:
-    """Color tokens (hex or rgba() strings, QSS-ready)."""
+    """Color tokens (hex / rgba() strings, QSS-ready). 3 surface steps."""
 
-    # Fluent dark "Mica" layering: base -> layer -> control, all neutral grays.
-    bg: str = "#202020"                          # window base (Mica approx)
-    surface: str = "#272727"                     # nav pane / sidebar layer
-    card: str = "#2B2B2B"                         # cards / panels (layer fill)
-    elevated: str = "#323232"                     # controls / hover fill
-    border: str = "rgba(255,255,255,0.08)"        # card/control stroke
-    border_soft: str = "rgba(255,255,255,0.05)"
+    bg: str = "#1B1B1B"          # window base
+    sidebar: str = "#1F1F1F"     # nav pane
+    card: str = "#242424"        # panels
+    control: str = "#2D2D2D"     # buttons / inputs
+    control_hover: str = "#353535"
+    control_down: str = "#2A2A2A"
+
+    border: str = "rgba(255,255,255,0.08)"
     divider: str = "rgba(255,255,255,0.06)"
 
     text: str = "#FFFFFF"
-    muted: str = "rgba(255,255,255,0.78)"         # secondary text
-    faint: str = "rgba(255,255,255,0.40)"         # tertiary / disabled
+    muted: str = "rgba(255,255,255,0.72)"
+    faint: str = "rgba(255,255,255,0.45)"
 
-    accent: str = "#4CC2FF"                        # Win11 dark accent (blue)
-    accent_hover: str = "#3AA9E0"
-    on_accent: str = "#00263D"                     # dark text on accent fill
-    danger: str = "#FF7B72"
-    warn: str = "#FFD166"
+    accent: str = "#4CC2FF"
+    accent_hover: str = "#5BC9FF"
+    on_accent: str = "#04304A"
 
-    # entity-kind colors (shared by table + minimap)
-    self_: str = "#4CC2FF"
-    player: str = "#6CB8FF"
-    monster: str = "#FF7B72"
-    npc: str = "#A9B2BD"
-    target: str = "#FFD166"
+    # entity-kind colors (distinct hues; shared by table + minimap)
+    self_: str = "#33D9B2"
+    player: str = "#4CC2FF"
+    monster: str = "#FF6B6B"
+    npc: str = "#B6BDC7"
+    target: str = "#FFC24B"
 
 
 @dataclass(frozen=True)
 class Metrics:
-    """Spacing / radius / sizing scale (px) — Fluent-ish."""
+    """One spacing scale + one control height; everything aligns to these."""
 
-    pad_s: int = 4
-    pad: int = 8
-    pad_l: int = 16
-    pad_xl: int = 24
-    radius: int = 8          # cards / buttons
-    radius_s: int = 5        # nav items / small controls
-    sidebar_w: int = 200
-    header_h: int = 52
+    gap_s: int = 6
+    gap: int = 8
+    gutter: int = 16            # standard spacing between groups
+    pad_card: int = 16
+    pad_page: int = 24
+
+    ctl_h: int = 32             # ALL interactive controls share this height
+    header_h: int = 56
+    nav_h: int = 38
+    sidebar_w: int = 208
+
+    radius: int = 8             # cards
+    radius_ctl: int = 6         # buttons / inputs
+
+    fs_title: int = 20
+    fs_brand: int = 15
+    fs_body: int = 13
+    fs_small: int = 12
+    fs_caps: int = 11
+
     font_ui: str = '"Segoe UI Variable", "Segoe UI"'
     font_mono: str = '"Cascadia Mono", "Consolas", monospace'
 
@@ -82,73 +93,74 @@ def qss() -> str:
     return f"""
     * {{
         font-family: {m.font_ui};
-        font-size: 13px;
+        font-size: {m.fs_body}px;
         color: {c.text};
         outline: none;
     }}
     QWidget#root, QMainWindow {{ background: {c.bg}; }}
 
-    /* sidebar (NavigationView pane) */
-    QWidget#sidebar {{ background: {c.surface}; }}
-    QLabel#brand {{ font-size: 17px; font-weight: 700; color: {c.text}; }}
-    QLabel#brandAccent {{ font-size: 17px; font-weight: 700; color: {c.accent}; }}
-    QLabel#navHint {{ color: {c.faint}; font-size: 11px; }}
+    /* sidebar */
+    QWidget#sidebar {{ background: {c.sidebar}; }}
+    QLabel#brand {{ font-size: {m.fs_brand}px; font-weight: 700; }}
+    QLabel#brandAccent {{ font-size: {m.fs_brand}px; font-weight: 700; color: {c.accent}; }}
+    QLabel#navHint {{ color: {c.faint}; font-size: {m.fs_small}px; }}
     QPushButton#nav {{
-        text-align: left; padding: 9px 12px 9px 14px; border: none;
-        border-left: 3px solid transparent; border-radius: {m.radius_s}px;
+        text-align: left; padding: 0 12px; min-height: {m.nav_h}px; border: none;
+        border-left: 3px solid transparent; border-radius: {m.radius_ctl}px;
         color: {c.muted}; background: transparent; font-weight: 600;
     }}
     QPushButton#nav:hover {{ background: {c.divider}; color: {c.text}; }}
     QPushButton#nav:checked {{
-        background: {c.elevated}; color: {c.text}; border-left: 3px solid {c.accent};
+        background: {c.control}; color: {c.text}; border-left: 3px solid {c.accent};
     }}
-    QPushButton#nav:disabled {{ color: {c.faint}; }}
+    QPushButton#nav:disabled {{ color: {c.faint}; background: transparent; }}
 
     /* header */
     QWidget#header {{ background: {c.bg}; border-bottom: 1px solid {c.divider}; }}
-    QLabel#pageTitle {{ font-size: 18px; font-weight: 700; }}
-    QLabel#muted {{ color: {c.muted}; }}
+    QLabel#pageTitle {{ font-size: {m.fs_title}px; font-weight: 700; }}
+    QLabel#muted {{ color: {c.muted}; font-size: {m.fs_small}px; }}
+    QLabel#status {{ color: {c.muted}; }}
     QLabel#mono {{ font-family: {m.font_mono}; color: {c.text}; }}
-
-    /* status pill */
-    QLabel#pill {{
-        background: {c.elevated}; border: 1px solid {c.border};
-        border-radius: 11px; padding: 3px 10px; color: {c.muted}; font-weight: 600;
-    }}
+    QLabel#monoMuted {{ font-family: {m.font_mono}; color: {c.muted}; }}
 
     /* cards / panels */
     QFrame#card {{
         background: {c.card}; border: 1px solid {c.border}; border-radius: {m.radius}px;
     }}
-    QLabel#cardTitle {{ color: {c.muted}; font-weight: 700; font-size: 11px; letter-spacing: 1px; }}
+    QLabel#cardTitle {{
+        color: {c.muted}; font-weight: 700; font-size: {m.fs_caps}px; letter-spacing: 1px;
+    }}
 
     /* table */
     QTableView {{
-        background: transparent; border: none; gridline-color: {c.border_soft};
+        background: transparent; border: none; gridline-color: transparent;
         selection-background-color: {c.divider}; selection-color: {c.text};
     }}
     QHeaderView::section {{
-        background: transparent; color: {c.muted}; border: none;
-        border-bottom: 1px solid {c.border}; padding: 7px 8px; font-weight: 600;
+        background: transparent; color: {c.faint}; border: none;
+        border-bottom: 1px solid {c.border}; padding: 6px 8px;
+        font-weight: 700; font-size: {m.fs_small}px;
     }}
     QTableView::item {{ padding: 5px 8px; border: none; }}
 
-    /* Fluent segmented toggle (Mock/Live) */
+    /* buttons (one style family; #toggle is the segmented variant) */
     QPushButton#toggle {{
-        background: {c.elevated}; border: 1px solid {c.border}; border-radius: {m.radius_s}px;
-        padding: 6px 14px; color: {c.muted}; font-weight: 600;
+        background: {c.control}; border: 1px solid {c.border}; border-radius: {m.radius_ctl}px;
+        padding: 0 14px; color: {c.muted}; font-weight: 600;
     }}
-    QPushButton#toggle:hover {{ background: {c.divider}; color: {c.text}; }}
+    QPushButton#toggle:hover {{ background: {c.control_hover}; color: {c.text}; }}
     QPushButton#toggle:checked {{
         background: {c.accent}; border-color: {c.accent}; color: {c.on_accent};
     }}
 
-    /* sliders (radius) */
-    QSlider::groove:horizontal {{ height: 4px; background: {c.elevated}; border-radius: 2px; }}
+    /* slider */
+    QSlider {{ min-height: {m.ctl_h}px; }}
+    QSlider::groove:horizontal {{ height: 4px; background: {c.control}; border-radius: 2px; }}
     QSlider::sub-page:horizontal {{ background: {c.accent}; border-radius: 2px; }}
     QSlider::handle:horizontal {{
         background: {c.text}; width: 14px; height: 14px; margin: -6px 0; border-radius: 7px;
     }}
+    QSlider::handle:horizontal:hover {{ background: {c.accent}; }}
 
     /* scrollbars */
     QSplitter::handle {{ background: transparent; }}

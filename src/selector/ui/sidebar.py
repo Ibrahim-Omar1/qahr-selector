@@ -35,11 +35,11 @@ class Sidebar(QWidget):
         self.setFixedWidth(METRICS.sidebar_w)
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(METRICS.pad, METRICS.pad_l, METRICS.pad, METRICS.pad_l)
-        lay.setSpacing(METRICS.pad_s)
+        lay.setContentsMargins(METRICS.gap, METRICS.gutter, METRICS.gap, METRICS.gutter)
+        lay.setSpacing(METRICS.gap_s)
 
         brand = QHBoxLayout()
-        brand.setContentsMargins(METRICS.pad, 0, 0, METRICS.pad_l)
+        brand.setContentsMargins(METRICS.gap, 0, 0, METRICS.gutter)
         dot = QLabel("◆")
         dot.setObjectName("brandAccent")
         name = QLabel("Selector")

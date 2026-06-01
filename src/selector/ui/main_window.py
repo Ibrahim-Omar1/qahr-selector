@@ -72,8 +72,8 @@ class MainWindow(QMainWindow):
         header.setObjectName("header")
         header.setFixedHeight(METRICS.header_h)
         lay = QHBoxLayout(header)
-        lay.setContentsMargins(METRICS.pad_xl, 0, METRICS.pad_l, 0)
-        lay.setSpacing(METRICS.pad_l)
+        lay.setContentsMargins(METRICS.pad_page, 0, METRICS.gutter, 0)
+        lay.setSpacing(METRICS.gutter)
 
         self._title = QLabel(_TITLES[0])
         self._title.setObjectName("pageTitle")
@@ -81,15 +81,17 @@ class MainWindow(QMainWindow):
         lay.addStretch(1)
 
         self._status = QLabel("—")
-        self._status.setObjectName("pill")
-        lay.addWidget(self._status)
+        self._status.setObjectName("status")
+        lay.addWidget(self._status, 0, Qt.AlignmentFlag.AlignVCenter)
 
         self._toggle = QPushButton("Mock")
         self._toggle.setObjectName("toggle")
         self._toggle.setCheckable(True)
+        self._toggle.setFixedHeight(METRICS.ctl_h)
+        self._toggle.setFixedWidth(72)
         self._toggle.setToolTip("Switch between Mock data and the live game")
         self._toggle.toggled.connect(self._on_toggle)
-        lay.addWidget(self._toggle)
+        lay.addWidget(self._toggle, 0, Qt.AlignmentFlag.AlignVCenter)
         return header
 
     def _placeholder(self, title: str) -> QWidget:
