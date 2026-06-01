@@ -212,6 +212,7 @@ class MemoryReader:
             kind=classify(uid, selected_uid=selected, hero_uid=hero.uid, monsters=monsters),
             dist=chebyshev(hero.x, hero.y, xy[0], xy[1]),
             guild=guild,
+            guild_id=synid,
             relation=relation(
                 uid, synid, hero_uid=hero.uid, hero_syndicate_id=hero_syndicate_id
             ),

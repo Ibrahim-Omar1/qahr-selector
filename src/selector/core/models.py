@@ -74,6 +74,7 @@ class Entity:
     kind: EntityKind
     dist: int        # Chebyshev distance from the hero
     guild: str = ""  # guild/syndicate name ("" if not in one)
+    guild_id: int = 0  # syndicate id (0 = not in a guild)
     relation: Relation = Relation.NEUTRAL  # vs. the hero (guildmate/ally/enemy)
 
     @property

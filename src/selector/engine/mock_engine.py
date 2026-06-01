@@ -50,21 +50,21 @@ class MockEngine:
         sel = self.selected_uid()
         # uids chosen to land in distinct bands: player (>999999), monster
         # (500001..999999), NPC (<500001); "Sadistic" == selected -> TARGET.
-        # uid, name, x, y, pk, guild, relation
+        # uid, name, x, y, pk, guild, gid, relation
         seed = [
-            (1050860, "Reaper", hx + 4, hy + 2, 0, "Vanguard", Relation.GUILDMATE),
-            (1050861, "Aegis", hx - 5, hy + 3, 0, "Bastion", Relation.ALLY),
-            (1050862, "Ruin", hx + 6, hy - 4, 0, "Crimson", Relation.ENEMY),
-            (700123, "Turtle", hx - 6, hy + 1, 0, "", Relation.NEUTRAL),
-            (12345, "Merchant", hx + 9, hy - 2, 1, "", Relation.NEUTRAL),
-            (1007799, "Sadistic", hx + 1, hy - 3, 3, "Vanguard", Relation.GUILDMATE),
+            (1050860, "Reaper", hx + 4, hy + 2, 0, "Vanguard", 26, Relation.GUILDMATE),
+            (1050861, "Aegis", hx - 5, hy + 3, 0, "Bastion", 76, Relation.ALLY),
+            (1050862, "Ruin", hx + 6, hy - 4, 0, "Crimson", 3, Relation.ENEMY),
+            (700123, "Turtle", hx - 6, hy + 1, 0, "", 0, Relation.NEUTRAL),
+            (12345, "Merchant", hx + 9, hy - 2, 1, "", 0, Relation.NEUTRAL),
+            (1007799, "Sadistic", hx + 1, hy - 3, 3, "Vanguard", 26, Relation.GUILDMATE),
         ]
         return [
             Entity(
                 uid=uid, name=name, x=x, y=y, pk=pk,
                 kind=classify(uid, selected_uid=sel, hero_uid=hero_uid),
                 dist=chebyshev(hx, hy, x, y),
-                guild=guild, relation=rel,
+                guild=guild, guild_id=gid, relation=rel,
             )
-            for uid, name, x, y, pk, guild, rel in seed
+            for uid, name, x, y, pk, guild, gid, rel in seed
         ]
