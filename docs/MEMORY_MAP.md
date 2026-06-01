@@ -56,6 +56,21 @@ ent   = [ block + (g % 2) * 8 ]
 Implemented in `MemoryReader.entities()`. Verified live: recovers every nearby
 player/monster/NPC with matching uid + coords + name. See [ESP.md](ESP.md).
 
+## Syndicate (guild) relations — read-only, matches the in-game panel
+Same singleton (`0x1A0F488`) holds a `std::vector<CSyndicateEntry*>` of the
+player's guild relations:
+
+| Container offset | Field |
+|------------------|-------|
+| `+0x58` / `+0x5C` | vector begin / end (4-byte entry pointers) |
+
+Per `CSyndicateEntry`: `+0x08` = guild id, `+0x24` = guild name (`std::wstring`),
+**`+0x3C` = relation: `0`=ally, `1`=enemy, `2`=own guild** (verified live against
+the in-game guild-relations panel, both pages). Walk begin→end, deref each entry.
+`MemoryReader._read_syndicate_relations()` builds ally/enemy id sets; combined
+with guildmate (`entity +0xB40 == hero +0xB40`) this drives the radar coloring.
+Lookup fn `CSyndicateMgr::GetRelationByID` @ `0xE903B8` (ecx=`0x1A0F488`).
+
 > **Correction:** `entity+0x11B8` / `0xFD6C8E` (called a "visible-entity container"
 > in the RE project's `SELECTOR_CT_ANALYSIS.md`) is actually a per-entity *visual-effect*
 > render loop — NOT the entity list. The roster above is the real one.
