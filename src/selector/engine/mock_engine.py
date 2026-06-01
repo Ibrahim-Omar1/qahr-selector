@@ -51,16 +51,17 @@ class MockEngine:
         # uids chosen to land in distinct bands: player (>999999), monster
         # (500001..999999), NPC (<500001); "Sadistic" == selected -> TARGET.
         seed = [
-            (1050860, "Reaper", hx + 4, hy + 2, 0),
-            (700123, "Turtle", hx - 6, hy + 1, 0),
-            (12345, "Merchant", hx + 9, hy - 2, 1),
-            (1007799, "Sadistic", hx + 1, hy - 3, 3),
+            (1050860, "Reaper", hx + 4, hy + 2, 0, "Vanguard"),
+            (700123, "Turtle", hx - 6, hy + 1, 0, ""),
+            (12345, "Merchant", hx + 9, hy - 2, 1, ""),
+            (1007799, "Sadistic", hx + 1, hy - 3, 3, "Vanguard"),
         ]
         return [
             Entity(
                 uid=uid, name=name, x=x, y=y, pk=pk,
                 kind=classify(uid, selected_uid=sel, hero_uid=hero_uid),
                 dist=chebyshev(hx, hy, x, y),
+                guild=guild,
             )
-            for uid, name, x, y, pk in seed
+            for uid, name, x, y, pk, guild in seed
         ]

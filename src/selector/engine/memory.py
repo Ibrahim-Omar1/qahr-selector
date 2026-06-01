@@ -180,7 +180,20 @@ class MemoryReader:
             pk=self._u32(ep + st.pk),
             kind=classify(uid, selected_uid=selected, hero_uid=hero.uid, monsters=monsters),
             dist=chebyshev(hero.x, hero.y, xy[0], xy[1]),
+            guild=self._guild_name(ep),
         )
+
+    def _guild_name(self, ep: int) -> str:
+        """Guild/syndicate name, or '' if the entity isn't in one.
+
+        Gated on the syndicate id (+0xB40): the name pointer (+0xB70) is only
+        valid when the id is non-zero (otherwise it's a stale pointer).
+        """
+        st = self.target.structs
+        if not self._u32(ep + st.syndicate_id):
+            return ""
+        name_ptr = self._u32(ep + st.syndicate_name)
+        return self._utf16(name_ptr) if name_ptr else ""
 
     def entities(self, radius: int = 64) -> list[Entity]:
         """Read-only radar: nearby entities within ``radius`` tiles, sorted by distance.

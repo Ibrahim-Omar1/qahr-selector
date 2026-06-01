@@ -27,6 +27,10 @@ Same object layout for the hero and every roster entity.
 | `+0x770` | coord subobj | `X = [+0x10] >> 6`, `Y = [+0x14] >> 6` |
 | `+0x870` | classify byte | weak signal; prefer the monster vector |
 | `+0x1B7C` | PK mode | `0` Free · `1` Peace · `2` Team · `3` Capture · `4` Guild · `5` Ally |
+| `+0xB40` | syndicate (guild) id | `0` = not in a guild; gate the name read on this |
+| `+0xB44` | syndicate rank/position | |
+| `+0xB70` | guild name | CString ptr → UTF-16; **only valid when `+0xB40 != 0`** (else stale ptr) |
+| `+0xAC0` | mate/spouse name | CString ptr → UTF-16; `NOMATE_NAME@@` when single |
 | `+0x3F0` | move speed | |
 | `+0xAF8` | follow/interaction target id **and** range clamp | context-dependent (NOT mana) |
 

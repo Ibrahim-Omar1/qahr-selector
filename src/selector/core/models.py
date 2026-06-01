@@ -63,6 +63,7 @@ class Entity:
     pk: int | None
     kind: EntityKind
     dist: int        # Chebyshev distance from the hero
+    guild: str = ""  # guild/syndicate name ("" if not in one)
 
     @property
     def pk_name(self) -> str | None:

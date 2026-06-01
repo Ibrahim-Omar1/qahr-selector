@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
 from selector.core.models import Entity
 from selector.ui.theme import COLORS, METRICS, kind_color
 
-_HEADERS = ("Kind", "Name", "UID", "Tile", "Dist", "PK")
+_HEADERS = ("Kind", "Name", "Guild", "UID", "Tile", "Dist", "PK")
 _Index = QModelIndex | QPersistentModelIndex  # Qt's index argument type
 
 
@@ -75,6 +75,7 @@ class EntityTableModel(QAbstractTableModel):
             return (
                 e.kind.value,
                 e.name or "—",
+                e.guild or "—",
                 str(e.uid),
                 f"{e.x}, {e.y}",
                 str(e.dist),
@@ -82,7 +83,7 @@ class EntityTableModel(QAbstractTableModel):
             )[col]
         if role == Qt.ItemDataRole.ForegroundRole and col == 0:
             return QColor(kind_color(e.kind))
-        if role == Qt.ItemDataRole.TextAlignmentRole and col in (2, 3, 4):
+        if role == Qt.ItemDataRole.TextAlignmentRole and col in (3, 4, 5):
             return int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         return None
 
@@ -142,5 +143,5 @@ class EntityTable(QTableView):
         self.setItemDelegateForColumn(0, KindChipDelegate(self))
         hdr = self.horizontalHeader()
         hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Name stretches
-        for col in (0, 2, 3, 4, 5):
+        for col in (0, 2, 3, 4, 5, 6):
             hdr.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
