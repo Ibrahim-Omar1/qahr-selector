@@ -6,7 +6,9 @@ requires-python = ">=3.10"
 dependencies = [
     "PySide6>=6.11.1",
     "pymem>=1.14.0",
-    "frida>=17.10.0",
+    # 17.10.0 fails to inject into the 32-bit client ("refused to load
+    # frida-agent / terminated during injection"); 17.7.3 injects cleanly.
+    "frida==17.7.3",
     "loguru>=0.7.2",
 ]
 
