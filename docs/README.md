@@ -7,6 +7,7 @@ Reference docs for the Qahr Online (Conquer v3071) trainer. **Gameplay only.**
 | [STATUS.md](STATUS.md) | Feature status & roadmap — what's verified working vs pending, and the known read-only dead-ends. **Start here.** |
 | [MEMORY_MAP.md](MEMORY_MAP.md) | The verified memory map: hero, entity roster, struct fields, globals, internal functions. Mirrors `core/offsets.py` (the single source of truth). |
 | [ESP.md](ESP.md) | The read-only ESP/radar: how the scene-roster walk works + how to run `esp_dump.py`. |
+| [GUILDS.md](GUILDS.md) | Guild name/id + relationship (guildmate/ally/enemy) coloring, read from your in-game guild relations. |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Setup, the gates (ruff/mypy/pytest), running scripts, live-testing, and gotchas (uv/PATH, frida pin). |
 | [../ARCHITECTURE.md](../ARCHITECTURE.md) | The layered/MVVM design and the "tick + drivers, no inline hooks" pivot. |
 

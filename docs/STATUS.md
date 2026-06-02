@@ -7,6 +7,7 @@ What's actually built and verified, vs. what's next. Built one feature at a time
 |-----------|-----|------|
 | **Attach + hero read** | `MemoryReader.hero()` — pymem, `[heroSlot]` | read-only, none |
 | **ESP / radar** | `MemoryReader.entities()` — scene-roster walk (see [ESP.md](ESP.md)) | read-only, none |
+| **Guilds & relations** | guild name/id + ally/enemy/guildmate coloring from your in-game relations (see [GUILDS.md](GUILDS.md)) | read-only, none |
 | **Per-frame game-thread tick** | Frida agent hooks `user32!PeekMessageW` (`scripts/prove_tick.py`) | read-only proof; foundation for drivers |
 | **Observability** | loguru + faulthandler + frida detach/error wiring + watchdog (`services/observability.py`) | — |
 

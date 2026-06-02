@@ -5,7 +5,7 @@ A clean, modern desktop trainer for **Qahr Online (Conquer Online v3071)**.
 
 | | |
 |---|---|
-| **UI** | PySide6 (MVVM) — *deferred, in design* |
+| **UI** | PySide6 (MVVM) — Fluent dark; radar page live |
 | **Memory** | pymem (read-only state) |
 | **Hooks / game-function calls** | Frida (agent + RPC) |
 | **Tooling** | uv · ruff · mypy (strict) · pytest · PyInstaller |
@@ -29,11 +29,12 @@ Verified live, **read-only (zero injection)**:
 |---------|-------|
 | Attach + hero read (uid, name, coords, pk, speed) | ✅ working |
 | **ESP / radar** — nearby players/monsters/NPCs with name, coords, kind, distance | ✅ working |
+| **Guilds & relations** — guild name/id + ally/enemy/guildmate coloring from your in-game relations | ✅ working |
+| **UI** — Fluent dark shell + radar page (minimap + table), collapsible sidebar | ✅ working |
 | Per-frame game-thread tick (Frida `PeekMessageW`) | ✅ proven |
 | Observability (loguru + faulthandler + frida wiring + watchdog) | ✅ |
 | `selected_uid` (read-only) | ⛔ no static global — needs the SELECT hook |
-| `follow` driver | ⏳ next |
-| UI | ⏳ deferred (discuss redesign first) |
+| `follow` driver / Combat (act on relation) | ⏳ next |
 
 Details + roadmap: **[docs/STATUS.md](docs/STATUS.md)**.
 
@@ -42,8 +43,9 @@ Details + roadmap: **[docs/STATUS.md](docs/STATUS.md)**.
 uv sync --extra dev                      # create .venv + install deps
 uv run ruff check . && uv run mypy src && uv run pytest
 ```
-Run against the live game (in-world):
+Run the app, or the read-only scripts (game in-world):
 ```sh
+uv run selector --live                   # the GUI on the live game (Mock by default)
 uv run python scripts/esp_dump.py        # read-only ESP/radar dump
 uv run python scripts/prove_tick.py      # read-only Frida tick proof
 ```
@@ -56,7 +58,7 @@ src/selector/
 ├── core/      # pure domain: offsets (single source), models, radar logic
 ├── engine/    # I/O: pymem reads, frida session, agent/*.js, mock engine
 ├── services/  # observability (logging/crash/watchdog), fleet mgr
-├── viewmodels/ ui/   # MVVM + PySide6 (deferred)
+├── viewmodels/ ui/   # MVVM + PySide6 (Fluent dark; radar page)
 scripts/       # read-only runners (esp_dump, prove_tick)
 tests/         # no-game pytest (offsets, radar, engine, observability)
 docs/          # reference docs (below)
@@ -66,6 +68,7 @@ docs/          # reference docs (below)
 - **[docs/STATUS.md](docs/STATUS.md)** — what works vs pending, and known dead-ends
 - **[docs/MEMORY_MAP.md](docs/MEMORY_MAP.md)** — verified addresses/offsets (mirrors `core/offsets.py`)
 - **[docs/ESP.md](docs/ESP.md)** — the read-only radar: roster walk + usage
+- **[docs/GUILDS.md](docs/GUILDS.md)** — guild name/id + ally/enemy/guildmate coloring
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — setup, gates, live-testing, gotchas
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — layered/MVVM design + the tick/driver pivot
 
