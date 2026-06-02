@@ -12,6 +12,7 @@ from selector.engine.mock_engine import MockEngine
 from selector.engine.protocol import EngineProtocol
 from selector.ui.main_window import MainWindow
 from selector.ui.theme import qss
+from selector.viewmodels.auto_vm import AutoViewModel
 from selector.viewmodels.radar_vm import RadarViewModel
 
 
@@ -21,16 +22,23 @@ def make_engine(live: bool) -> EngineProtocol:
 
 
 def build(live: bool = False) -> tuple[QApplication, MainWindow]:
-    """Wire engine → view-model → window and return (app, window)."""
+    """Wire engine → view-models → window and return (app, window)."""
     existing = QApplication.instance()
     app = existing if isinstance(existing, QApplication) else QApplication([])
     app.setStyleSheet(qss())
 
-    vm = RadarViewModel(MockEngine())
-    window = MainWindow(
-        vm, on_engine_change=lambda is_live: vm.set_engine(make_engine(is_live))
-    )
+    engine = MockEngine()
+    radar_vm = RadarViewModel(engine)
+    auto_vm = AutoViewModel(engine)
+
+    def on_engine_change(is_live: bool) -> None:
+        eng = make_engine(is_live)  # one engine instance shared by both view-models
+        radar_vm.set_engine(eng)
+        auto_vm.set_engine(eng)
+
+    window = MainWindow(radar_vm, auto_vm, on_engine_change)
     if live:
         window.set_live(True)
-    vm.start()
+    radar_vm.start()
+    auto_vm.start()
     return app, window

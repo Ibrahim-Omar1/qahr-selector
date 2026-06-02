@@ -14,6 +14,7 @@ _ICON_FAMILY = "Segoe Fluent Icons"
 # Segoe Fluent / MDL2 Assets codepoints (Private Use Area).
 NAV_MENU = chr(0xE700)   # GlobalNavButton (hamburger)
 RADAR = chr(0xE890)      # View (eye)
+AUTO = chr(0xE945)       # LightningBolt (automation)
 COMBAT = chr(0xE7FC)     # Game (controller)
 MOVEMENT = chr(0xE816)   # MapDirections
 SETTINGS = chr(0xE713)   # Settings (gear)

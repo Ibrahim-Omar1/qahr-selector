@@ -16,12 +16,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from selector.ui.icons import COMBAT, MOVEMENT, NAV_MENU, RADAR, SETTINGS, glyph_icon
+from selector.ui.icons import AUTO, COMBAT, MOVEMENT, NAV_MENU, RADAR, SETTINGS, glyph_icon
 from selector.ui.theme import COLORS, METRICS
 
 # (label, icon codepoint, enabled)
 _SECTIONS = (
     ("Radar", RADAR, True),
+    ("Auto", AUTO, True),
     ("Combat", COMBAT, False),
     ("Movement", MOVEMENT, False),
     ("Settings", SETTINGS, False),

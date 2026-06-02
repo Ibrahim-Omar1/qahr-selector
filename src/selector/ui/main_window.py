@@ -19,23 +19,27 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from selector.ui.pages.auto_page import AutoPage
 from selector.ui.pages.radar_page import RadarPage
 from selector.ui.sidebar import Sidebar
 from selector.ui.theme import METRICS
+from selector.viewmodels.auto_vm import AutoViewModel
 from selector.viewmodels.radar_vm import RadarViewModel
 
-_TITLES = ("Radar", "Combat", "Movement", "Settings")
+_TITLES = ("Radar", "Auto", "Combat", "Movement", "Settings")
 
 
 class MainWindow(QMainWindow):
     def __init__(
         self,
         vm: RadarViewModel,
+        auto_vm: AutoViewModel,
         on_engine_change: Callable[[bool], None],
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._vm = vm
+        self._auto_vm = auto_vm
         self._on_engine_change = on_engine_change
         self.setWindowTitle("Selector — Qahr Online")
         self.resize(1040, 660)
@@ -57,8 +61,9 @@ class MainWindow(QMainWindow):
         right.addWidget(self._build_header())
 
         self._stack = QStackedWidget()
-        self._stack.addWidget(RadarPage(vm))                 # 0
-        for title in _TITLES[1:]:                            # 1..3 placeholders
+        self._stack.addWidget(RadarPage(vm))                 # 0 Radar
+        self._stack.addWidget(AutoPage(auto_vm))             # 1 Auto
+        for title in _TITLES[2:]:                            # 2..4 placeholders
             self._stack.addWidget(self._placeholder(title))
         right.addWidget(self._stack, 1)
         outer.addLayout(right, 1)

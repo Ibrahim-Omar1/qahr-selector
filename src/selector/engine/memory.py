@@ -153,6 +153,15 @@ class MemoryReader:
         """
         return None
 
+    def set_autopot(self, hp_pct: int | None, mp_pct: int | None) -> bool:
+        """Drive the game's native auto-pot by writing its threshold settings.
+
+        Stub until the auto-hunt auto-pot fields are pinned (Auto Step 0) and the
+        write path (verify-before-write + write-access handle) lands in Step 2.
+        """
+        _ = (hp_pct, mp_pct)
+        return False
+
     def _roster_entity_ptr(self, _map: int, mapsize: int, myoff: int, i: int) -> int | None:
         """Resolve the i-th roster element to its entity-object pointer.
 

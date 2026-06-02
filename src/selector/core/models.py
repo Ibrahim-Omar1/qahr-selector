@@ -46,6 +46,13 @@ def pk_label(pk: int | None) -> str | None:
     return PK_NAMES.get(pk, f"Mode {pk}")
 
 
+def _pct(cur: int | None, mx: int | None) -> int | None:
+    """cur/mx as a 0-100 percent, or None if unavailable; clamped, safe."""
+    if cur is None or not mx or mx <= 0:
+        return None
+    return max(0, min(100, round(cur * 100 / mx)))
+
+
 @dataclass(frozen=True, slots=True)
 class Hero:
     """The local player's live state (a read-only snapshot)."""
@@ -56,10 +63,22 @@ class Hero:
     y: int
     pk: int | None
     speed: int | None
+    hp: int | None = None
+    max_hp: int | None = None
+    mp: int | None = None
+    max_mp: int | None = None
 
     @property
     def pk_name(self) -> str | None:
         return pk_label(self.pk)
+
+    @property
+    def hp_pct(self) -> int | None:
+        return _pct(self.hp, self.max_hp)
+
+    @property
+    def mp_pct(self) -> int | None:
+        return _pct(self.mp, self.max_mp)
 
 
 @dataclass(frozen=True, slots=True)
