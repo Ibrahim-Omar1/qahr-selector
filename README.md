@@ -1,6 +1,6 @@
 # Selector
 
-A clean, modern desktop trainer for **Qahr Online (Conquer Online v3071)**.
+A clean, modern desktop trainer for **Qahr Online (Conquer Online v3076)**.
 **Gameplay/QoL only** — no DRM, HWID, or telemetry code.
 
 | | |

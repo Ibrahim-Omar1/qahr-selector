@@ -1,6 +1,6 @@
 # Selector — Architecture
 
-Qahr Online (Conquer v3071) trainer. **Gameplay only** — no DRM/HWID/telemetry.
+Qahr Online (Conquer v3076) trainer. **Gameplay only** — no DRM/HWID/telemetry.
 
 ## Principles
 - **Libraries, not hand-rolled internals.** `pymem` for memory, `frida` for hooks

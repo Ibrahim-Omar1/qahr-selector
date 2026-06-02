@@ -1,6 +1,6 @@
 # Selector — Docs
 
-Reference docs for the Qahr Online (Conquer v3071) trainer. **Gameplay only.**
+Reference docs for the Qahr Online (Conquer v3076) trainer. **Gameplay only.**
 
 | Doc | What's in it |
 |-----|--------------|

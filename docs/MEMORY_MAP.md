@@ -1,22 +1,25 @@
-# Memory Map — Conquer v3071
+# Memory Map — Conquer v3076
 
-Verified addresses/offsets for the live v3071 client. **`core/offsets.py` is the
+Verified addresses/offsets for the live v3076 client. **`core/offsets.py` is the
 single source of truth** — this doc is the human-readable mirror. If they disagree,
 `offsets.py` wins (update this doc).
 
 - **Module:** `Conquer.exe` · **ImageBase:** `0x400000` (no ASLR observed)
 - **Rebase:** `live = module_base + (VA - 0x400000)` (`MemoryReader._rebase`)
-- **md5:** `A671CD3A`
+- **md5:** `87965DF398918B55B76B6FE5664B8965` (v3076; was v3071 `A671CD3A`)
 - Coords are tile units: a coord subobject holds raw `X/Y`; `tile = raw >> 6`.
+- **Porting note:** struct offsets + the roster/relation/deque layout are stable
+  across recompiles; only the static **VAs** below shift. Globals were re-derived
+  live for v3076 (v3071 VAs shown for reference).
 
-## Globals (`offsets.globals`)
+## Globals (`offsets.globals`) — v3076 (v3071 in parens)
 | Name | VA | Meaning |
 |------|----|---------|
-| `heroSlot` | `0x1A057C0` | `[heroSlot]` → local player object |
-| `ninjaSkillMgr` | `0x1A058E4` | `[ninjaSkillMgr]` → auto-hunt / auto-pot manager |
-| `camSlot` | `0x1A054F8` | `[camSlot]` → scene/camera object |
-| `monsterVecBegin` / `monsterVecEnd` | `0x1A0F5B0` / `0x1A0F5B4` | `std::vector<u32>` of monster UIDs (authoritative monster set) |
-| `blessedTid` | `0x1A10A14` | thread-identity tripwire (relevant only to injected/called paths) |
+| `heroSlot` | `0x1A170A0` (0x1A057C0) | `[heroSlot]` → local player object |
+| `ninjaSkillMgr` | `0x1A171C4` (0x1A058E4) | `[ninjaSkillMgr]` → auto-hunt / auto-pot manager |
+| `camSlot` | `0x1A16DD8` (0x1A054F8) | `[camSlot]` → scene/camera object |
+| `monsterVecBegin` / `monsterVecEnd` | `0x1A20EA0` / `0x1A20EA4` | `std::vector<u32>` of monster UIDs |
+| `blessedTid` | `0x1A10A14` *(STALE)* | thread-identity tripwire (re-derive before active calls) |
 
 ## Entity / hero struct fields (`StructOffsets`)
 Same object layout for the hero and every roster entity.
@@ -38,7 +41,7 @@ Same object layout for the hero and every roster entity.
 | `+0x4ED0` | auto-HP **% threshold** (cadence path) | paired with `[ninjaSkillMgr]+0x154` (main path) |
 
 ## Scene entity roster — read-only radar source (`RosterLayout`)
-Static inline object at **`0x1A0F488`**. Entity storage is an MSVC `std::deque` of
+Static inline object at **`0x1A20D78`** (v3071 `0x1A0F488`). Entity storage is an MSVC `std::deque` of
 **8-byte elements `{entity_ptr@+0, _extra@+4}`** (2 per block). The local hero is *not*
 in this roster (it's the `heroSlot` singleton).
 
@@ -60,7 +63,7 @@ Implemented in `MemoryReader.entities()`. Verified live: recovers every nearby
 player/monster/NPC with matching uid + coords + name. See [ESP.md](ESP.md).
 
 ## Syndicate (guild) relations — read-only, matches the in-game panel
-Same singleton (`0x1A0F488`) holds a `std::vector<CSyndicateEntry*>` of the
+Same singleton (the roster, `0x1A20D78`) holds a `std::vector<CSyndicateEntry*>` of the
 player's guild relations:
 
 | Container offset | Field |
@@ -79,6 +82,8 @@ Lookup fn `CSyndicateMgr::GetRelationByID` @ `0xE903B8` (ecx=`0x1A0F488`).
 > render loop — NOT the entity list. The roster above is the real one.
 
 ## Internal functions (`offsets.functions`) — for later driver/hook features
+> **STALE on v3076:** the VAs below are v3071 — re-derive before calling (no
+> shipped feature uses them yet; `ghidra-hunter` is relocating them).
 | Name | VA | Convention |
 |------|----|-----------|
 | `sentGetter` | `0x43C68C` | `() → [heroSlot]` (lazy-inits hero) |
