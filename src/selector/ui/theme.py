@@ -195,12 +195,6 @@ def qss() -> str:
     }}
     QSlider::handle:horizontal:hover {{ background: {c.accent_hover}; }}
 
-    /* stat bars (HP/MP) */
-    QProgressBar {{ background: {c.control}; border: none; border-radius: 6px; }}
-    QProgressBar::chunk {{ border-radius: 6px; background: {c.accent}; }}
-    QProgressBar#hpbar::chunk {{ background: #5BD16B; }}
-    QProgressBar#mpbar::chunk {{ background: #4CC2FF; }}
-
     /* scrollbars */
     QSplitter::handle {{ background: transparent; }}
     QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px; }}

@@ -31,6 +31,7 @@ Verified live, **read-only (zero injection)**:
 | **ESP / radar** — nearby players/monsters/NPCs with name, coords, kind, distance | ✅ working |
 | **Guilds & relations** — guild name/id + ally/enemy/guildmate coloring from your in-game relations | ✅ working |
 | **UI** — Fluent dark shell + radar page (minimap + table), collapsible sidebar | ✅ working |
+| **Auto-HP** — toggle + threshold that drives the game's own auto-potion (a settings write) | ✅ working |
 | Per-frame game-thread tick (Frida `PeekMessageW`) | ✅ proven |
 | Observability (loguru + faulthandler + frida wiring + watchdog) | ✅ |
 | `selected_uid` (read-only) | ⛔ no static global — needs the SELECT hook |
@@ -69,6 +70,7 @@ docs/          # reference docs (below)
 - **[docs/MEMORY_MAP.md](docs/MEMORY_MAP.md)** — verified addresses/offsets (mirrors `core/offsets.py`)
 - **[docs/ESP.md](docs/ESP.md)** — the read-only radar: roster walk + usage
 - **[docs/GUILDS.md](docs/GUILDS.md)** — guild name/id + ally/enemy/guildmate coloring
+- **[docs/AUTO.md](docs/AUTO.md)** — Auto-HP via the game's native auto-potion (settings write)
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — setup, gates, live-testing, gotchas
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — layered/MVVM design + the tick/driver pivot
 

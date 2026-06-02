@@ -153,14 +153,32 @@ class MemoryReader:
         """
         return None
 
-    def set_autopot(self, hp_pct: int | None, mp_pct: int | None) -> bool:
-        """Drive the game's native auto-pot by writing its threshold settings.
+    def set_auto_hp(self, pct: int | None) -> bool:
+        """Enable/disable the game's native HP auto-pot and set its threshold.
 
-        Stub until the auto-hunt auto-pot fields are pinned (Auto Step 0) and the
-        write path (verify-before-write + write-access handle) lands in Step 2.
+        Writes the hero enable byte (+0x4EC8) and the HP% threshold the trigger
+        reads ([ninjaSkillMgr]+0x154 main path, hero+0x4ED0 cadence path). ``pct``
+        is the "drink below %" threshold; ``None`` disables. The game drinks on
+        its own (blessed) thread, so this is just a settings write — no thread-
+        identity exposure. Returns True if the enable byte reads back as written.
         """
-        _ = (hp_pct, mp_pct)
-        return False
+        if self._pm is None:
+            return False
+        st = self.target.structs
+        hero = self._hero_ptr()
+        if not hero:
+            return False
+        enable = 0 if pct is None else 1
+        try:
+            self._pm.write_bytes(hero + st.autopot_hp_enable, bytes([enable]), 1)
+            if pct is not None:
+                self._pm.write_uint(hero + st.autopot_hp_pct, pct)
+                mgr = self._u32_va(self.target.globals["ninjaSkillMgr"])
+                if mgr:
+                    self._pm.write_uint(mgr + st.ninja_hp_pct, pct)
+            return bool(self._pm.read_bytes(hero + st.autopot_hp_enable, 1)[0] == enable)
+        except Exception:
+            return False
 
     def _roster_entity_ptr(self, _map: int, mapsize: int, myoff: int, i: int) -> int | None:
         """Resolve the i-th roster element to its entity-object pointer.

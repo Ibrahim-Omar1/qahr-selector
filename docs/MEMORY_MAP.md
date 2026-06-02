@@ -13,6 +13,7 @@ single source of truth** — this doc is the human-readable mirror. If they disa
 | Name | VA | Meaning |
 |------|----|---------|
 | `heroSlot` | `0x1A057C0` | `[heroSlot]` → local player object |
+| `ninjaSkillMgr` | `0x1A058E4` | `[ninjaSkillMgr]` → auto-hunt / auto-pot manager |
 | `camSlot` | `0x1A054F8` | `[camSlot]` → scene/camera object |
 | `monsterVecBegin` / `monsterVecEnd` | `0x1A0F5B0` / `0x1A0F5B4` | `std::vector<u32>` of monster UIDs (authoritative monster set) |
 | `blessedTid` | `0x1A10A14` | thread-identity tripwire (relevant only to injected/called paths) |
@@ -33,6 +34,8 @@ Same object layout for the hero and every roster entity.
 | `+0xAC0` | mate/spouse name | CString ptr → UTF-16; `NOMATE_NAME@@` when single |
 | `+0x3F0` | move speed | |
 | `+0xAF8` | follow/interaction target id **and** range clamp | context-dependent (NOT mana) |
+| `+0x4EC8` | native auto-HP-pot **enable** (byte) | `1` = on (idle path). See [AUTO.md](AUTO.md) |
+| `+0x4ED0` | auto-HP **% threshold** (cadence path) | paired with `[ninjaSkillMgr]+0x154` (main path) |
 
 ## Scene entity roster — read-only radar source (`RosterLayout`)
 Static inline object at **`0x1A0F488`**. Entity storage is an MSVC `std::deque` of

@@ -12,7 +12,7 @@ from selector.engine.mock_engine import MockEngine
 from selector.engine.protocol import EngineProtocol
 from selector.ui.main_window import MainWindow
 from selector.ui.theme import qss
-from selector.viewmodels.auto_vm import AutoViewModel
+from selector.viewmodels.auto_vm import AutoController
 from selector.viewmodels.radar_vm import RadarViewModel
 
 
@@ -29,16 +29,15 @@ def build(live: bool = False) -> tuple[QApplication, MainWindow]:
 
     engine = MockEngine()
     radar_vm = RadarViewModel(engine)
-    auto_vm = AutoViewModel(engine)
+    auto = AutoController(engine)
 
     def on_engine_change(is_live: bool) -> None:
-        eng = make_engine(is_live)  # one engine instance shared by both view-models
+        eng = make_engine(is_live)  # one engine instance shared by radar + auto
         radar_vm.set_engine(eng)
-        auto_vm.set_engine(eng)
+        auto.set_engine(eng)
 
-    window = MainWindow(radar_vm, auto_vm, on_engine_change)
+    window = MainWindow(radar_vm, auto, on_engine_change)
     if live:
         window.set_live(True)
     radar_vm.start()
-    auto_vm.start()
     return app, window

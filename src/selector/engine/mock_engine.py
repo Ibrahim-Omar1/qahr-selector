@@ -19,7 +19,7 @@ class MockEngine:
         self._hero_name = hero_name
         self._attached = False
         self._t = 0
-        self._autopot: tuple[int | None, int | None] = (None, None)
+        self._auto_hp: int | None = None
 
     def attach(self) -> bool:
         self._attached = True
@@ -37,19 +37,13 @@ class MockEngine:
         self._t += 1
         x = 300 + int(8 * math.cos(self._t / 12))
         y = 300 + int(8 * math.sin(self._t / 12))
-        # HP/MP wander so the Auto page bars visibly move in the demo.
-        hp = 5000 + int(3500 * math.sin(self._t / 20))
-        mp = 3000 + int(2200 * math.cos(self._t / 16))
-        return Hero(
-            uid=1050859, name=self._hero_name, x=x, y=y, pk=0, speed=66,
-            hp=hp, max_hp=8500, mp=mp, max_mp=5200,
-        )
+        return Hero(uid=1050859, name=self._hero_name, x=x, y=y, pk=0, speed=66)
 
     def selected_uid(self) -> int | None:
         return 1007799
 
-    def set_autopot(self, hp_pct: int | None, mp_pct: int | None) -> bool:
-        self._autopot = (hp_pct, mp_pct)  # demo: just remember it
+    def set_auto_hp(self, pct: int | None) -> bool:
+        self._auto_hp = pct  # demo: just remember it
         return self._attached
 
     def entities(self, radius: int = 64) -> list[Entity]:

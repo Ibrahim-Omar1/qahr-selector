@@ -66,6 +66,10 @@ class StructOffsets:
     last_x: int = 0x4FF0      # cached last tile X (walk dedup)
     last_y: int = 0x4FF4
     autohp_flag: int = 0x4ED4  # AutoHP branch byte
+    # Native auto-HP-pot (drive the game's own potion use; verified live):
+    autopot_hp_enable: int = 0x4EC8  # hero byte: 1 = HP-pot enabled (idle path)
+    autopot_hp_pct: int = 0x4ED0     # hero dword: HP% threshold (cadence path)
+    ninja_hp_pct: int = 0x154        # [ninjaSkillMgr]+0x154 HP% threshold (main path)
     # scene-object fields (the object esi points to at the SELECT site):
     sel_uid: int = 0x11208    # scene + this = selected target UID
     sel_obj: int = 0x1120C    # scene + this = selected target OBJECT ptr (unverified)
@@ -166,6 +170,7 @@ V3071 = GameTarget(
     roster=RosterLayout(),
     globals={
         "heroSlot": 0x1A057C0,    # [heroSlot] -> local player object
+        "ninjaSkillMgr": 0x1A058E4,  # [ninjaSkillMgr] -> auto-hunt/auto-pot mgr
         "camSlot": 0x1A054F8,     # [camSlot]  -> scene/camera object
         "blessedTid": 0x1A10A14,  # thread-identity tripwire (documented)
         # std::vector<uint32> of monster UIDs (begin/end) — authoritative
