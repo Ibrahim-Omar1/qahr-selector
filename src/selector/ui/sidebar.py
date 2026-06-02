@@ -66,7 +66,7 @@ class Sidebar(QWidget):
             self._labels.append(label)
 
         lay.addStretch(1)
-        self._hint = QLabel("v3071 · gameplay only")
+        self._hint = QLabel("v3076 · gameplay only")
         self._hint.setObjectName("navHint")
         lay.addWidget(self._hint)
 

@@ -16,7 +16,7 @@ A ``GameTarget`` carries:
   * ``sites``     — inline-hook locations (VA + signature; signature preferred)
 
 To port to a NEW client version:
-  1. copy the ``V3071`` block to a new ``GameTarget``,
+  1. copy the ``V3076`` block to a new ``GameTarget``,
   2. update only the signatures if a major/obfuscated update broke them (they
      usually survive — that's the point), and bump ``CURRENT``.
 
@@ -157,28 +157,31 @@ class GameTarget:
 
 
 # --------------------------------------------------------------------------- #
-# v3071 — current target (md5 A671CD3A, ImageBase 0x400000).
-#   Conquer.exe+OFFSET == VA - 0x400000.  VAs are the live v3071 build;
-#   signatures (where present) let the agent re-resolve them on a recompile.
+# v3076 — current target (md5 87965DF398918B55B76B6FE5664B8965, ImageBase 0x400000).
+#   Conquer.exe+OFFSET == VA - 0x400000.  Globals re-derived live for v3076
+#   (recompile of v3071); struct offsets + roster/relation layout are unchanged.
+#   Sites re-resolve from their AOB signatures; functions VAs are stale v3071
+#   (used only by unbuilt active features — re-derive before use).
 # --------------------------------------------------------------------------- #
-V3071 = GameTarget(
-    version="v3071",
+V3076 = GameTarget(
+    version="v3076",
     module="Conquer.exe",
     image_base=0x400000,
-    md5="A671CD3A",
+    md5="87965DF398918B55B76B6FE5664B8965",
     structs=StructOffsets(),
-    roster=RosterLayout(),
+    roster=RosterLayout(container=0x1A20D78),   # v3071 0x1A0F488
     globals={
-        "heroSlot": 0x1A057C0,    # [heroSlot] -> local player object
-        "ninjaSkillMgr": 0x1A058E4,  # [ninjaSkillMgr] -> auto-hunt/auto-pot mgr
-        "camSlot": 0x1A054F8,     # [camSlot]  -> scene/camera object
-        "blessedTid": 0x1A10A14,  # thread-identity tripwire (documented)
-        # std::vector<uint32> of monster UIDs (begin/end) — authoritative
-        # monster set for radar classification (UID bands can't separate it).
-        "monsterVecBegin": 0x1A0F5B0,
-        "monsterVecEnd": 0x1A0F5B4,
+        "heroSlot": 0x1A170A0,       # v3071 0x1A057C0 — [heroSlot] -> local player
+        "ninjaSkillMgr": 0x1A171C4,  # v3071 0x1A058E4 — auto-hunt/auto-pot mgr
+        "camSlot": 0x1A16DD8,        # v3071 0x1A054F8 — scene/camera object
+        "blessedTid": 0x1A10A14,     # v3071 VA — STALE; re-derive before active calls
+        # std::vector<uint32> of monster UIDs (begin/end) — authoritative monster set.
+        "monsterVecBegin": 0x1A20EA0,  # v3071 0x1A0F5B0
+        "monsterVecEnd": 0x1A20EA4,    # v3071 0x1A0F5B4
     },
     functions={
+        # NOTE: VAs below are v3071 and STALE on v3076 — re-derive before calling
+        # (none are used by the current read/write-only features).
         "sentGetter": Sig(None, 0x43C68C, "hero/scene getter -> [heroSlot]"),
         "jump": Sig(None, 0x10F2074, "JumpFunc thiscall(this,X,Y) ret 8"),
         "walkXY": Sig(None, 0x111267C, "walk to X,Y"),
@@ -193,19 +196,21 @@ V3071 = GameTarget(
         "revive": Sig(None, 0xEAAD2B, "revive entry"),
     },
     sites={
+        # select sig no longer matches on v3076 (re-find); VA stale. follow/entIter
+        # re-resolved live by their signatures.
         "select": Sig("89 86 08 12 01 00 E8", 0x4D79FB,
-                      "mov [esi+0x11208],eax - esi=scene, eax=selected UID"),
-        "follow": Sig("8B 8E F8 0A 00 00 3B", 0xFAC595,
+                      "mov [esi+0x11208],eax - esi=scene, eax=selected UID (STALE)"),
+        "follow": Sig("8B 8E F8 0A 00 00 3B", 0xFB4833,
                       "mov ecx,[esi+0xAF8] - per-frame hero re-entry"),
-        "entIter": Sig("8B 90 68 02 00 00 8D", 0xDCEEDA,
+        "entIter": Sig("8B 90 68 02 00 00 8D", 0xDD809E,
                        "mov edx,[eax+0x268] - per-entity iteration (ESP/SXYE)"),
     },
 )
 
 
 # Registry + the build the app currently targets.
-TARGETS: dict[str, GameTarget] = {V3071.version: V3071}
-CURRENT: GameTarget = V3071
+TARGETS: dict[str, GameTarget] = {V3076.version: V3076}
+CURRENT: GameTarget = V3076
 
 
 def get_target(version: str | None = None) -> GameTarget:
