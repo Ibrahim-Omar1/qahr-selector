@@ -11,7 +11,8 @@ site via a native cave; this does it entirely read-only.)
    see [MEMORY_MAP.md](MEMORY_MAP.md#scene-entity-roster--read-only-radar-source-rosterlayout)),
    reading `_Myoff` live each call.
 3. Each element's entity pointer is decoded into a typed `core.models.Entity`
-   (`uid, name, x, y, pk, kind, dist`) by `_decode_entity`.
+   (`uid, name, x, y, pk, kind, dist, guild, guild_id, relation`) by `_decode_entity`
+   — the guild/relation fields are covered in [GUILDS.md](GUILDS.md).
 4. `core.radar.classify()` assigns the `EntityKind`:
    - `TARGET` if uid == selected (currently never, since `selected_uid` is `None` read-only)
    - `PLAYER` if uid `> 0xF423F`
@@ -47,6 +48,7 @@ hero Sadistic (uid 1050859) @ (317,292) — 11 entities within 32 tiles
 
 ## Code
 `engine/memory.py` (`entities`, `_decode_entity`, `_roster_entity_ptr`,
-`_read_uid_vector`) · `core/radar.py` (`classify`, `chebyshev`) ·
-`core/models.py` (`Entity`, `EntityKind`) · `scripts/esp_dump.py` (runner).
-Mock data for no-game dev/tests: `engine/mock_engine.py`.
+`_read_uid_vector`, `_read_syndicate_relations`, `_wstr`) · `core/radar.py`
+(`classify`, `relation`, `chebyshev`) · `core/models.py` (`Entity`, `EntityKind`,
+`Relation`) · `scripts/esp_dump.py` (runner). Mock data for no-game dev/tests:
+`engine/mock_engine.py`. The UI radar page is in `ui/pages/radar_page.py`.

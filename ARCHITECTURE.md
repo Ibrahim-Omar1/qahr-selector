@@ -27,21 +27,25 @@ Don't inline-hook gameplay sites (that froze/closed the game). Instead:
 src/selector/
 ├── __main__.py        # thin entry: args → bootstrap → run
 ├── app/               # composition root (DI / wiring)
-├── core/              # DOMAIN (pure): offsets (versioned GameTarget), models, feature catalog
+├── core/              # DOMAIN (pure): offsets (versioned GameTarget), models, radar logic
 ├── engine/            # INFRASTRUCTURE: pymem reads, frida session, agent/*.js, mock
-│   └── agent/         #   Frida agent JS (the per-frame tick + hooks)
-├── services/          # instance/fleet manager, MCP diagnostics server
+│   └── agent/         #   Frida agent JS (read-only per-frame tick today)
+├── services/          # observability (logging/crash/watchdog); fleet mgr (planned)
 ├── viewmodels/        # MVVM: QObject bridges (engine state ↔ UI, signals/properties)
-└── ui/                # PySide6 views + design system (theme)
-tests/                 # pytest (engine logic, offsets, mock)
+└── ui/                # PySide6 views + design system (Fluent dark theme, widgets, pages)
+tests/                 # pytest (offsets, radar, engine/mock, observability, UI smoke)
 ```
 
 ## Patterns
-- **MVVM** — views bind to view-models (signals/`Property`); view-models call services.
-- **`EngineProtocol`** (PEP 544) — Frida / Mock engines are swappable.
-- **Feature registry** — features are metadata + a handler; UI renders the list generically.
+- **MVVM** — views bind to view-models (signals); view-models poll the engine on a
+  `QTimer` (e.g. `RadarViewModel`). Views never touch the engine directly.
+- **`EngineProtocol`** (PEP 544) — `MemoryReader` (live, pymem) and `MockEngine`
+  (no-game) are swappable; the UI's Mock⇄Live toggle just swaps the instance.
 - **Composition root** (`app/bootstrap.py`) — no globals; wired in one place.
-- **Single-source offsets** — `core/offsets.py`; codegen emits the JSON the agent consumes.
+- **Single-source offsets** — `core/offsets.py`; `FridaSession` injects them into the
+  agent as a `CONFIG` blob (`GameTarget.to_agent_config()`), so JS shares the Python map.
+- **Feature registry** *(planned)* — today the shell has a Radar page; Combat / Movement /
+  Settings are nav placeholders pending those features.
 
 ## Stack
 PySide6 · pymem · frida · uv (deps) · ruff + mypy + pytest · PyInstaller (build).

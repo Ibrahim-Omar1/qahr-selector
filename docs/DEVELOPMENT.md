@@ -22,6 +22,15 @@ $s = ".venv\Scripts"
 & "$s\ruff.exe" check . ; & "$s\mypy.exe" src ; & "$s\pytest.exe" -q
 ```
 
+## Run the app
+```powershell
+uv run selector                       # GUI on Mock data (no game needed)
+uv run selector --live                # attach to the live game (read-only)
+# uv not on PATH? the installed console script works:
+.venv\Scripts\selector.exe --live
+```
+The Mock⇄Live toggle in the header switches engines at runtime — no restart.
+
 ## Running scripts against the live game
 Scripts read `src/` via the package; set `PYTHONPATH=src` (or use `uv run`):
 ```powershell
